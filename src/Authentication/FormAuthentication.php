@@ -15,39 +15,44 @@ use Jivoo\AccessControl\PasswordHasher;
  * created. The names of the fields can be changed with options "username"
  * and "password".
  */
-class FormAuthentication extends LoadableAuthentication {
-  /**
-   * @var bool Create cookie.
-   */
-  private $cookie = false;
-  
-  /**
-   * {@inheritdoc}
-   */
-  protected $options = array(
-    'username' => 'username'
-  );
+class FormAuthentication extends LoadableAuthentication
+{
 
-  /**
-   * {@inheritdoc}
-   */
-  public function authenticate($data, UserModel $userModel, PasswordHasher $hasher) {
-    $this->cookie = isset($data['remember']);
-    $idData = array();
-    $idData[$this->options['username']] = $data[$this->options['username']];
-    $user = $userModel->findUser($idData);
-    if (isset($user)) {
-      $password = $userModel->getPassword($user);
-      if ($hasher->compare($data['password'], $password))
-        return $user;
+    /**
+     * @var bool Create cookie.
+     */
+    private $cookie = false;
+
+    /**
+     * {@inheritdoc}
+     */
+    protected $options = array(
+        'username' => 'username'
+    );
+
+    /**
+     * {@inheritdoc}
+     */
+    public function authenticate($data, UserModel $userModel, PasswordHasher $hasher)
+    {
+        $this->cookie = isset($data['remember']);
+        $idData = array();
+        $idData[$this->options['username']] = $data[$this->options['username']];
+        $user = $userModel->findUser($idData);
+        if (isset($user)) {
+            $password = $userModel->getPassword($user);
+            if ($hasher->compare($data['password'], $password)) {
+                return $user;
+            }
+        }
+        return null;
     }
-    return null;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function cookie() {
-    return $this->cookie;
-  }
+    /**
+     * {@inheritdoc}
+     */
+    public function cookie()
+    {
+        return $this->cookie;
+    }
 }

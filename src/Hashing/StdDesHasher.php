@@ -8,7 +8,9 @@ namespace Jivoo\AccessControl\Hashing;
 /**
  * A password hasher using standard DES.
  */
-class StdDesHasher extends CryptHasher {
-  protected $constant = 'CRYPT_STD_DES';
-  protected $saltLength = 2;
+class StdDesHasher extends CryptHasher
+{
+
+    protected $constant = 'CRYPT_STD_DES';
+    protected $saltLength = 2;
 }

@@ -8,18 +8,20 @@ namespace Jivoo\AccessControl;
 /**
  * A permission list.
  */
-interface PermissionList {
-  /**
-   * Check if a permission exists in the list.
-   * @param string $permission Permission string.
-   * @return bool True if permission exists, false if not.
-   */
-  public function hasPermission($permission);
-  
-  /**
-   * Check if a permission exists in the list.
-   * @param string $permission Permission string.
-   * @return bool True if permission exists, false if not.
-   */
-  public function __isset($permission);
+interface PermissionList
+{
+
+    /**
+     * Check if a permission exists in the list.
+     * @param string $permission Permission string.
+     * @return bool True if permission exists, false if not.
+     */
+    public function hasPermission($permission);
+
+    /**
+     * Check if a permission exists in the list.
+     * @param string $permission Permission string.
+     * @return bool True if permission exists, false if not.
+     */
+    public function __isset($permission);
 }

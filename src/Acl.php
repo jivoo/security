@@ -8,12 +8,14 @@ namespace Jivoo\AccessControl;
 /**
  * An access control list.
  */
-interface Acl {
-  /**
-   * Check if a user has a permission.
-   * @param mixed $user User data.
-   * @param string $permission Permission string.
-   * @return bool True if user has permission, false if not.
-   */
-  public function hasPermission($permission, $user = null);
+interface Acl
+{
+
+    /**
+     * Check if a user has a permission.
+     * @param string $permission Permission string.
+     * @param mixed $user User data.
+     * @return bool True if user has permission, false if not.
+     */
+    public function hasPermission($permission, $user = null);
 }

@@ -12,14 +12,17 @@ use Jivoo\AccessControl\LoadableAcl;
  * on the requesting user to check permissions. To use this ACL module,
  * implement a 'recordHasPermission' method in the user model.
  */
-class RecordAcl extends LoadableAcl {
-  /**
-   * {@inheritdoc}
-   */
-  public function hasPermission($permission, $user = null) {
-    if (!isset($user))
-      return false;
-    return $user->hasPermission($permission);
-  }
-  
+class RecordAcl extends LoadableAcl
+{
+
+    /**
+     * {@inheritdoc}
+     */
+    public function hasPermission($permission, $user = null)
+    {
+        if (!isset($user)) {
+            return false;
+        }
+        return $user->hasPermission($permission);
+    }
 }

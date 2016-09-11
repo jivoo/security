@@ -3,11 +3,11 @@
 // Copyright (c) 2015 Niels Sonnich Poulsen (http://nielssp.dk)
 // Licensed under the MIT license.
 // See the LICENSE file or http://opensource.org/licenses/MIT for more information.
-namespace Jivoo\AccessControl\Authentication;
+namespace Jivoo\Security\Authentication;
 
-use Jivoo\AccessControl\Authentication;
-use Jivoo\AccessControl\PasswordHasher;
-use Jivoo\AccessControl\UserModel;
+use Jivoo\Security\Authentication;
+use Jivoo\Security\PasswordHasher;
+use Jivoo\Security\UserModel;
 
 /**
  * Authentication using Basic HTTP authentication.

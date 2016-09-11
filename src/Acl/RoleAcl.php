@@ -3,14 +3,14 @@
 // Copyright (c) 2015 Niels Sonnich Poulsen (http://nielssp.dk)
 // Licensed under the MIT license.
 // See the LICENSE file or http://opensource.org/licenses/MIT for more information.
-namespace Jivoo\AccessControl\Acl;
+namespace Jivoo\Security\Acl;
 
-use Jivoo\AccessControl\LoadableAcl;
+use Jivoo\Security\LoadableAcl;
 use Jivoo\Models\BasicRecord;
-use Jivoo\AccessControl\PermissionList;
-use Jivoo\AccessControl\PermissionListBuilder;
-use Jivoo\AccessControl\Jivoo\AccessControl;
-use Jivoo\AccessControl\InvalidRoleException;
+use Jivoo\Security\PermissionList;
+use Jivoo\Security\PermissionListBuilder;
+use Jivoo\Security\Jivoo\Security;
+use Jivoo\Security\InvalidRoleException;
 
 /**
  * An access control list implementation that assumes the user data has a

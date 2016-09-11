@@ -3,11 +3,11 @@
 // Copyright (c) 2015 Niels Sonnich Poulsen (http://nielssp.dk)
 // Licensed under the MIT license.
 // See the LICENSE file or http://opensource.org/licenses/MIT for more information.
-namespace Jivoo\AccessControl\Authentication;
+namespace Jivoo\Security\Authentication;
 
-use Jivoo\AccessControl\LoadableAuthentication;
-use Jivoo\AccessControl\UserModel;
-use Jivoo\AccessControl\PasswordHasher;
+use Jivoo\Security\LoadableAuthentication;
+use Jivoo\Security\UserModel;
+use Jivoo\Security\PasswordHasher;
 
 /**
  * Authentication using a POST-method form. Expects fields named "username" and

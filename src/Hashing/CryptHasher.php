@@ -3,12 +3,12 @@
 // Copyright (c) 2015 Niels Sonnich Poulsen (http://nielssp.dk)
 // Licensed under the MIT license.
 // See the LICENSE file or http://opensource.org/licenses/MIT for more information.
-namespace Jivoo\AccessControl\Hashing;
+namespace Jivoo\Security\Hashing;
 
-use Jivoo\AccessControl\PasswordHasher;
+use Jivoo\Security\PasswordHasher;
 use Jivoo\Core\Utilities;
-use Jivoo\AccessControl\UnsupportedHashTypeException;
-use Jivoo\AccessControl\Random;
+use Jivoo\Security\UnsupportedHashTypeException;
+use Jivoo\Security\Random;
 use Jivoo\Core\Binary;
 
 /**

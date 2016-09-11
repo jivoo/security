@@ -3,9 +3,9 @@
 // Copyright (c) 2015 Niels Sonnich Poulsen (http://nielssp.dk)
 // Licensed under the MIT license.
 // See the LICENSE file or http://opensource.org/licenses/MIT for more information.
-namespace Jivoo\AccessControl\Hashing;
+namespace Jivoo\Security\Hashing;
 
-use Jivoo\AccessControl\UnsupportedHashTypeException;
+use Jivoo\Security\UnsupportedHashTypeException;
 
 /**
  * A password hasher using Blowfish (with PHP 5.3.7 security fixes).

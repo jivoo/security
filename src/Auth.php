@@ -3,16 +3,17 @@
 // Copyright (c) 2015 Niels Sonnich Poulsen (http://nielssp.dk)
 // Licensed under the MIT license.
 // See the LICENSE file or http://opensource.org/licenses/MIT for more information.
-namespace Jivoo\AccessControl;
+namespace Jivoo\Security;
 
 use Jivoo\Helpers\Helper;
-use Jivoo\AccessControl\Acl\DefaultAcl;
+use Jivoo\Security\Acl\DefaultAcl;
 use Jivoo\Core\Utilities;
 use Jivoo\Routing\RenderEvent;
 use Jivoo\Core\Assume;
 
 /**
- * Helper class for authentication and autorization.
+ * Module for authentication and authorization.
+ * 
  * @property UserModel $userModel User model.
  * @property array|Linkable|string|null $loginRoute Route for login page, ee
  * {@see Routing}.
@@ -51,7 +52,7 @@ use Jivoo\Core\Assume;
  * 'Acl'-suffix) or a list of names, see {@see LoadableAcl}. Can also be an
  * associative array mapping names to options.
  */
-class AuthHelper extends Helper
+class Auth extends Helper
 {
 
     /**
@@ -163,13 +164,13 @@ class AuthHelper extends Helper
      * @var string[] List of built-in hashing algorithms.
      */
     private $builtInHashers = array(
-        'Jivoo\AccessControl\Hashing\BcryptHasher',
-        'Jivoo\AccessControl\Hashing\Sha512Hasher',
-        'Jivoo\AccessControl\Hashing\Sha256Hasher',
-        'Jivoo\AccessControl\Hashing\BlowfishHasher',
-        'Jivoo\AccessControl\Hashing\Md5Hasher',
-        'Jivoo\AccessControl\Hashing\ExtDesHasher',
-        'Jivoo\AccessControl\Hashing\StdDesHasher'
+        'Jivoo\Security\Hashing\BcryptHasher',
+        'Jivoo\Security\Hashing\Sha512Hasher',
+        'Jivoo\Security\Hashing\Sha256Hasher',
+        'Jivoo\Security\Hashing\BlowfishHasher',
+        'Jivoo\Security\Hashing\Md5Hasher',
+        'Jivoo\Security\Hashing\ExtDesHasher',
+        'Jivoo\Security\Hashing\StdDesHasher'
     );
 
     /**
@@ -177,6 +178,11 @@ class AuthHelper extends Helper
      */
     private $defaultAcl = null;
 
+    public function __construct(Router $router, \Jivoo\Store\Document $session)
+    {
+        
+    }
+    
     /**
      * {@inheritdoc}
      */
@@ -251,7 +257,7 @@ class AuthHelper extends Helper
                 if ($value instanceof PasswordHasher) {
                     $this->passwordHasher = $value;
                 } else {
-                    Assume::isSubclassOf($value, 'Jivoo\AccessControl\Passwordhasher');
+                    Assume::isSubclassOf($value, 'Jivoo\Security\Passwordhasher');
                     $this->passwordHasher = new $value();
                 }
                 return;
@@ -308,8 +314,8 @@ class AuthHelper extends Helper
         if ($name instanceof Authentication) {
             return $this->addAuthentication($name);
         }
-        $class = 'Jivoo\AccessControl\Authentication\\' . $name . 'Authentication';
-        Utilities::assumeSubclassOf($class, 'Jivoo\AccessControl\LoadableAuthentication');
+        $class = 'Jivoo\Security\Authentication\\' . $name . 'Authentication';
+        Utilities::assumeSubclassOf($class, 'Jivoo\Security\LoadableAuthentication');
         $this->addAuthentication(new $class($this->app, $options), $name);
     }
 
@@ -323,8 +329,8 @@ class AuthHelper extends Helper
         if ($name instanceof Authorization) {
             return $this->addAuthorization($name);
         }
-        $class = 'Jivoo\AccessControl\Authorization\\' . $name . 'Authorization';
-        Utilities::assumeSubclassOf($class, 'Jivoo\AccessControl\LoadableAuthorization');
+        $class = 'Jivoo\Security\Authorization\\' . $name . 'Authorization';
+        Utilities::assumeSubclassOf($class, 'Jivoo\Security\LoadableAuthorization');
         $this->addAuthorization(new $class($this->app, $options, $this), $name);
     }
 
@@ -338,8 +344,8 @@ class AuthHelper extends Helper
         if ($name instanceof Acl) {
             return $this->addAcl($name);
         }
-        $class = 'Jivoo\AccessControl\Acl\\' . $name . 'Acl';
-        Utilities::assumeSubclassOf($class, 'Jivoo\AccessControl\LoadableAcl');
+        $class = 'Jivoo\Security\Acl\\' . $name . 'Acl';
+        Utilities::assumeSubclassOf($class, 'Jivoo\Security\LoadableAcl');
         $this->addAcl(new $class($this->app, $options), $name);
     }
 

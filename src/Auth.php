@@ -13,7 +13,7 @@ use Jivoo\Core\Assume;
 
 /**
  * Module for authentication and authorization.
- * 
+ *
  * @property UserModel $userModel User model.
  * @property array|Linkable|string|null $loginRoute Route for login page, ee
  * {@see Routing}.
@@ -52,7 +52,7 @@ use Jivoo\Core\Assume;
  * 'Acl'-suffix) or a list of names, see {@see LoadableAcl}. Can also be an
  * associative array mapping names to options.
  */
-class Auth extends Helper
+class Auth
 {
 
     /**
@@ -161,45 +161,29 @@ class Auth extends Helper
     private $passwordHasher = null;
 
     /**
-     * @var string[] List of built-in hashing algorithms.
-     */
-    private $builtInHashers = array(
-        'Jivoo\Security\Hashing\BcryptHasher',
-        'Jivoo\Security\Hashing\Sha512Hasher',
-        'Jivoo\Security\Hashing\Sha256Hasher',
-        'Jivoo\Security\Hashing\BlowfishHasher',
-        'Jivoo\Security\Hashing\Md5Hasher',
-        'Jivoo\Security\Hashing\ExtDesHasher',
-        'Jivoo\Security\Hashing\StdDesHasher'
-    );
-
-    /**
      * @var DefaultAcl Default access control list.
      */
     private $defaultAcl = null;
-
-    public function __construct(Router $router, \Jivoo\Store\Document $session)
-    {
-        
-    }
     
     /**
-     * {@inheritdoc}
+     * @var \Jivoo\Http\Router
      */
-    protected function init()
-    {
-        foreach ($this->builtInHashers as $builtIn) {
-            try {
-                $this->passwordHasher = new $builtIn();
-                break;
-            } catch (UnsupportedHashTypeException $e) {
-            }
-        }
+    private $router;
+    
+    /**
+     * @var \Jivoo\Store\Document
+     */
+    private $session;
 
-        $this->m->Routing->on('beforeDispatch', array($this, 'checkAuthorization'));
+    public function __construct(\Jivoo\Http\Router $router, \Jivoo\Store\Document $session)
+    {
+        $this->router = $router;
+        $this->session = $session;
+        $this->passwordHasher = new Hashing\DefaultHasher();
         $this->defaultAcl = new DefaultAcl($this->app);
         $this->addAcl($this->defaultAcl);
     }
+    
 
     /**
      * {@inheritdoc}
@@ -226,10 +210,7 @@ class Auth extends Helper
             case 'user':
                 return $this->getUser();
         }
-        if (isset($this->acModules[$property])) {
-            return $this->acModules[$property];
-        }
-        return parent::__get($property);
+        throw new \Jivoo\InvalidPropertyException('Undefined property: ' . $property);
     }
 
     /**
@@ -254,99 +235,38 @@ class Auth extends Helper
                 $this->$property = $value;
                 return;
             case 'passwordHasher':
-                if ($value instanceof PasswordHasher) {
-                    $this->passwordHasher = $value;
-                } else {
-                    Assume::isSubclassOf($value, 'Jivoo\Security\Passwordhasher');
-                    $this->passwordHasher = new $value();
-                }
+                Jivoo\Assume::that($value instanceof PasswordHasher);
+                $this->passwordHasher = $value;
                 return;
             case 'authentication':
                 if (is_array($value)) {
-                    foreach ($value as $name => $options) {
-                        if (!is_string($name)) {
-                            $name = $options;
-                            $options = array();
-                        }
-                        $this->loadAuthentication($name, $options);
+                    foreach ($value as $method) {
+                        $this->addAuthorization($method);
                     }
                 } else {
-                    $this->loadAuthentication($value);
+                    $this->addAuthorization($value);
                 }
                 return;
             case 'authorization':
                 if (is_array($value)) {
-                    foreach ($value as $name => $options) {
-                        if (!is_string($name)) {
-                            $name = $options;
-                            $options = array();
-                        }
-                        $this->loadAuthorization($name, $options);
+                    foreach ($value as $method) {
+                        $this->addAuthorization($method);
                     }
                 } else {
-                    $this->loadAuthorization($value);
+                    $this->addAuthorization($value);
                 }
                 return;
             case 'acl':
                 if (is_array($value)) {
-                    foreach ($value as $name => $options) {
-                        if (!is_string($name)) {
-                            $name = $options;
-                            $options = array();
-                        }
-                        $this->loadAcl($name, $options);
+                    foreach ($value as $method) {
+                        $this->addAcl($method);
                     }
                 } else {
-                    $this->loadAcl($value);
+                    $this->addAcl($value);
                 }
                 return;
         }
-        parent::__set($property, $value);
-    }
-
-    /**
-     * Load authentication module.
-     * @param string|Authentication $name Name or object.
-     * @param array $options Options for new object.
-     */
-    private function loadAuthentication($name, $options = array())
-    {
-        if ($name instanceof Authentication) {
-            return $this->addAuthentication($name);
-        }
-        $class = 'Jivoo\Security\Authentication\\' . $name . 'Authentication';
-        Utilities::assumeSubclassOf($class, 'Jivoo\Security\LoadableAuthentication');
-        $this->addAuthentication(new $class($this->app, $options), $name);
-    }
-
-    /**
-     * Load authorization module.
-     * @param string|Authorization $name Name or object.
-     * @param array $options Options for new object.
-     */
-    private function loadAuthorization($name, $options = array())
-    {
-        if ($name instanceof Authorization) {
-            return $this->addAuthorization($name);
-        }
-        $class = 'Jivoo\Security\Authorization\\' . $name . 'Authorization';
-        Utilities::assumeSubclassOf($class, 'Jivoo\Security\LoadableAuthorization');
-        $this->addAuthorization(new $class($this->app, $options, $this), $name);
-    }
-
-    /**
-     * Load ACL module.
-     * @param string|Acl $name Name or object.
-     * @param array $options Options for new object.
-     */
-    private function loadAcl($name, $options = array())
-    {
-        if ($name instanceof Acl) {
-            return $this->addAcl($name);
-        }
-        $class = 'Jivoo\Security\Acl\\' . $name . 'Acl';
-        Utilities::assumeSubclassOf($class, 'Jivoo\Security\LoadableAcl');
-        $this->addAcl(new $class($this->app, $options), $name);
+        throw new \Jivoo\InvalidPropertyException('Undefined property: ' . $property);
     }
 
     /**
@@ -424,9 +344,9 @@ class Auth extends Helper
     {
         return isset($this->userModel)
             and ( isset($this->user)
-            or $this->checkSession()
-            or $this->checkCookie()
-            or $this->checkStateless());
+                or $this->checkSession()
+                or $this->checkCookie()
+                or $this->checkStateless());
     }
 
     /**
@@ -481,12 +401,12 @@ class Auth extends Helper
      */
     public function authenticationError()
     {
-        if ($this->request->isAjax()) {
+        if ($this->router->request->isAjax()) {
             if (isset($this->ajaxRoute)) {
-                $this->m->Routing->redirect($this->ajaxRoute);
+                $this->router->redirect($this->ajaxRoute);
             }
         } elseif (isset($this->loginRoute)) {
-            $this->m->Routing->redirect($this->loginRoute);
+            $this->router->redirect($this->loginRoute);
         }
         throw new ResponseOverrideException(
             new TextResponse(Http::FORBIDDEN, 'text/plain', tr('Unauthenticated'))

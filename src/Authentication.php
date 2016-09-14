@@ -27,17 +27,4 @@ interface Authentication
      * @param UserModel $userModel User model.
      */
     public function deauthenticate($userData, UserModel $userModel);
-
-    /**
-     * Whether or not a cookie (for long-lived sessions) should be created based
-     * on the most recent call to {@see authenticate}.
-     * @return bool True if a cookie should be created, false otherwise.
-     */
-    public function cookie();
-
-    /**
-     * Whether or not this method of authentication is stateless.
-     * @return bool True if stateless, false otherwise.
-     */
-    public function isStateless();
 }

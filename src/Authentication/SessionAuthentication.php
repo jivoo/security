@@ -51,23 +51,22 @@ class SessionAuthentication implements \Jivoo\Security\Authentication
         return null;
     }
 
-    public function cookie()
-    {
-        return false;
-    }
-
     public function deauthenticate($userData, \Jivoo\Security\UserModel $userModel)
     {
+        $userModel->deleteSession($this->sessionId);
         unset($this->sessionId);
         if (isset($this->session[$this->name])) {
             unset($this->session[$this->name]);
             unset($this->session[$this->renewName]);
         }
     }
-
-    public function isStateless()
+    
+    public function persist($user, \Jivoo\Security\UserModel $userModel)
     {
-        return false;
+        $sessionId = $userModel->createSession($user, time() + $this->lifeTime);
+        $this->session[$this->name] = $sessionId;
+        $this->session[$this->renewName] = time() + $this->renewAfter;
+        $this->sessionId = $sessionId;
     }
 
 }

@@ -61,54 +61,9 @@ class Auth
     private $user = null;
 
     /**
-     * @var string Current session id.
-     */
-    private $sessionId = null;
-
-    /**
      * @var UserModel User model.
      */
     private $userModel = null;
-
-    /**
-     * @var bool Whether or not to create sessions.
-     */
-    private $createSessions = true;
-
-    /**
-     * @var string Session prefix.
-     */
-    private $sessionPrefix = 'auth_';
-
-    /**
-     * @var int Life time of session.
-     */
-    private $sessionLifeTime = 3600; // 1 hour
-
-    /**
-     * @var int Time after which session is renewed.
-     */
-    private $sessionRenewAfter = 1800; // 0.5 hours
-
-    /**
-     * @var bool Whether or not to create cookies.
-     */
-    private $createCookies = true;
-
-    /**
-     * @var string Cookie prefix.
-     */
-    private $cookiePrefix = 'auth_';
-
-    /**
-     * @var int Life time of cookie.
-     */
-    private $cookieLifeTime = 2592000; // 30 days
-
-    /**
-     * @var int Time after which cookie is renewed.
-     */
-    private $cookieRenewAfter = 864000; // 10 days
 
     /**
      * @var string Prefix for permissions.
@@ -134,11 +89,6 @@ class Auth
      * @var Authentication[] Associative array of authentication methods.
      */
     private $authenticationMethods = array();
-
-    /**
-     * @var Authentication[] Associative array of stateless authentication methods.
-     */
-    private $statelessAuthenticationMethods = array();
 
     /**
      * @var Authorization[] Associative array of authorization methods.
@@ -195,15 +145,6 @@ class Auth
             case 'loginRoute':
             case 'unauthorizedRoute':
             case 'ajaxRoute':
-            case 'sessionId':
-            case 'createSessions':
-            case 'createCookies':
-            case 'sessionPrefix':
-            case 'sessionLifeTime':
-            case 'sessionRenewAfter':
-            case 'cookiePrefix':
-            case 'cookieLifeTime':
-            case 'cookieRenewAfter':
             case 'passwordHasher':
             case 'permissionPrefix':
                 return $this->$property;
@@ -223,14 +164,6 @@ class Auth
             case 'loginRoute':
             case 'unauthorizedRoute':
             case 'ajaxRoute':
-            case 'createSessions':
-            case 'createCookies':
-            case 'sessionPrefix':
-            case 'sessionLifeTime':
-            case 'sessionRenewAfter':
-            case 'cookiePrefix':
-            case 'cookieLifeTime':
-            case 'cookieRenewAfter':
             case 'permissionPrefix':
                 $this->$property = $value;
                 return;
@@ -278,9 +211,6 @@ class Auth
     public function addAuthentication(Authentication $authentication, $name = null)
     {
         $this->authenticationMethods[] = $authentication;
-        if ($authentication->isStateless()) {
-            $this->statelessAuthenticationMethods[] = $authentication;
-        }
         if (!isset($name)) {
             $name = Utilities::getClassName($authentication);
         }
@@ -342,11 +272,7 @@ class Auth
      */
     public function isLoggedIn()
     {
-        return isset($this->userModel)
-            and ( isset($this->user)
-                or $this->checkSession()
-                or $this->checkCookie()
-                or $this->checkStateless());
+        return isset($this->userModel) and isset($this->user);
     }
 
     /**
@@ -477,72 +403,6 @@ class Auth
     }
 
     /**
-     * Check session for logged in user
-     * @return boolean True if logged in, false otherwise
-     */
-    private function checkSession()
-    {
-        if (isset($this->session[$this->sessionPrefix . 'session'])) {
-            $sessionId = $this->session[$this->sessionPrefix . 'session'];
-            $user = $this->userModel->openSession($sessionId);
-            if ($user) {
-                $this->user = $user;
-                $this->sessionId = $sessionId;
-                if (isset($this->session[$this->sessionPrefix . 'renew_at'])) {
-                    if ($this->session[$this->sessionPrefix . 'renew_at'] <= time()) {
-                        $this->session[$this->sessionPrefix . 'renew_at'] = time() + $this->sessionRenewAfter;
-                        $this->userModel->renewSession($sessionId, time() + $this->sessionLifeTime);
-                    }
-                }
-                return true;
-            }
-            unset($this->session[$this->sessionPrefix . 'session']);
-        }
-        return false;
-    }
-
-    /**
-     * Check cookie for logged in user
-     * @return boolean True if logged in, false otherwise
-     */
-    private function checkCookie()
-    {
-        if (isset($this->request->cookies[$this->cookiePrefix . 'session'])) {
-            $sessionId = $this->request->cookies[$this->cookiePrefix . 'session'];
-            $user = $this->userModel->openSession($sessionId);
-            if ($user) {
-                $this->user = $user;
-                $this->sessionId = $sessionId;
-                if (isset($this->request->cookies[$this->cookiePrefix . 'renew_at'])) {
-                    if ($this->request->cookies[$this->cookiePrefix . 'renew_at'] <= time()) {
-                        $this->createCookie($sessionId);
-                        $this->userModel->renewSession($sessionId, time() + $this->cookieLifeTime);
-                    }
-                }
-                return true;
-            }
-            unset($this->request->cookies[$this->cookiePrefix . 'session']);
-        }
-        return false;
-    }
-
-    /**
-     * Check stateless authentication methods if any.
-     * @return boolean True if logged in, false otherwise.
-     */
-    public function checkStateless()
-    {
-        foreach ($this->statelessAuthenticationMethods as $method) {
-            $user = $method->authenticate($this->request->data, $this->userModel, $this->passwordHasher);
-            if ($user != null) {
-                $this->user = $user;
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
      * Get current user if logged in.
      * @return mixed User data of current user, null if not logged in.
      */
@@ -555,101 +415,28 @@ class Auth
     }
 
     /**
-     * Create long-lived session cookie.
-     * @param string $sessionId Session id.
-     */
-    private function createCookie($sessionId)
-    {
-        $this->request->cookies->setCookie(
-            $this->cookiePrefix . 'session',
-            $sessionId,
-            time() + $this->cookieLifeTime,
-            null,
-            null,
-            $this->request->secure,
-            true
-        );
-        if ($this->cookieRenewAfter >= 0) {
-            $this->request->cookies->setCookie(
-                $this->cookiePrefix . 'renew_at',
-                time() + $this->cookieRenewAfter,
-                time() + $this->cookieLifeTime,
-                null,
-                null,
-                $this->request->secure,
-                true
-            );
-        }
-    }
-
-    /**
-     * Create a session for user.
-     * @param mixed $user User data to create session for.
-     * @param string $cookie Whether or not to make the session long-lived, i.e.
-     * remember the user for the next visit.
-     */
-    public function createSession($user, $cookie = false)
-    {
-        $this->user = $user;
-        if ($cookie) {
-            $validUntil = time() + $this->cookieLifeTime;
-            $sessionId = $this->userModel->createSession($this->user, $validUntil);
-            $this->createCookie($sessionId);
-            $this->sessionId = $sessionId;
-        } else {
-            $validUntil = time() + $this->sessionLifeTime;
-            $sessionId = $this->userModel->createSession($this->user, $validUntil);
-            $this->session[$this->sessionPrefix . 'session'] = $sessionId;
-            $this->session[$this->sessionPrefix . 'renew_at'] = time() + $this->sessionRenewAfter;
-            $this->sessionId = $sessionId;
-        }
-    }
-
-    /**
      * Use available authentication methods to log in.
-     * @param array $data Log in data as an associative array, e.g.
-     * username/password.
+     *
+     * @param mixed $token Authentication token.
      * @return boolean True if successfully logged in, false otherwise.
      */
-    public function logIn($data = null)
+    public function authenticate($token)
     {
-        if (!isset($data)) {
-            $data = $this->request->data;
-        }
-        $cookie = false;
         foreach ($this->authenticationMethods as $method) {
-            $user = $method->authenticate($data, $this->userModel, $this->passwordHasher);
-            if ($user != null) {
+            $user = $method->authenticate($token, $this->userModel, $this->passwordHasher);
+            if ($user !== null) {
                 $this->user = $user;
-                $cookie = $method->cookie();
-                break;
             }
         }
-        if (!isset($this->user)) {
-            return false;
-        }
-        $this->createSession($this->user, $cookie);
-        return true;
+        return isset($this->user);
     }
-
+    
     /**
-     * Log out and delete session. Removes cookies and session variables.
+     * Log out and delete session.
      */
-    public function logOut()
+    public function deauthenticate()
     {
         if ($this->isLoggedIn()) {
-            if (isset($this->sessionId)) {
-                $this->userModel->deleteSession($this->sessionId);
-                unset($this->sessionId);
-            }
-            if (isset($this->session[$this->sessionPrefix . 'session'])) {
-                unset($this->session[$this->sessionPrefix . 'session']);
-                unset($this->session[$this->sessionPrefix . 'renew_at']);
-            }
-            if (isset($this->request->cookies[$this->cookiePrefix . 'session'])) {
-                unset($this->request->cookies[$this->cookiePrefix . 'session']);
-                unset($this->request->cookies[$this->cookiePrefix . 'renew_at']);
-            }
             foreach ($this->authenticationMethods as $method) {
                 $method->deauthenticate($this->user, $this->userModel);
             }

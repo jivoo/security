@@ -42,7 +42,7 @@ class CookieAuthentication implements \Jivoo\Security\Authentication
                     if ($this->cookies[$this->renewName] <= time()) {
                         $this->cookies[$this->name]->expiresAfter($this->lifeTime);
                         $this->cookies[$this->renewName]->setValue(time() + $this->renewAfter)
-                            ->expresAfter($this->lifeTime);
+                            ->expiresAfter($this->lifeTime);
                         $userModel->renewSession($sessionId, time() + $this->lifeTime);
                     }
                 }
@@ -53,23 +53,24 @@ class CookieAuthentication implements \Jivoo\Security\Authentication
         return null;
     }
 
-    public function cookie()
-    {
-        return false;
-    }
-
     public function deauthenticate($userData, \Jivoo\Security\UserModel $userModel)
     {
+        $userModel->deleteSession($this->sessionId);
         unset($this->sessionId);
         if (isset($this->cookies[$this->name])) {
             unset($this->cookies[$this->name]);
             unset($this->cookies[$this->renewName]);
         }
     }
-
-    public function isStateless()
+    
+    public function persist($user, \Jivoo\Security\UserModel $userModel)
     {
-        return false;
+        $sessionId = $userModel->createSession($user, time() + $this->lifeTime);
+        $this->cookies[$this->name]->setValue($sessionId)
+            ->expiresAfter($this->lifeTime);
+        $this->cookies[$this->renewName]->setValue(time() + $this->renewAfter)
+            ->expiresAfter($this->lifeTime);
+        $this->sessionId = $sessionId;
     }
 
 }

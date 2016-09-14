@@ -54,8 +54,7 @@ class BasicAuthentication extends Authentication
     /**
      * {@inheritdoc}
      */
-    public function isStateless()
+    public function deauthenticate($userData, \Jivoo\Security\UserModel $userModel)
     {
-        return true;
     }
 }

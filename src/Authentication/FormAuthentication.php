@@ -15,23 +15,29 @@ use Jivoo\Security\UserModel;
  * created. The names of the fields can be changed with options "username"
  * and "password".
  */
-class FormAuthentication extends Authentication
+class FormAuthentication implements Authentication
 {
 
     /**
-     * @var string[]
+     * @var string
      */
-    protected $options = array(
-        'username' => 'username'
-    );
+    private $usernameField;
+    
+    public function __construct($usernameField = 'username')
+    {
+        $this->usernameField = $usernameField;
+    }
 
     /**
      * {@inheritdoc}
      */
     public function authenticate($data, UserModel $userModel, PasswordHasher $hasher)
     {
+        if (!is_array($data)) {
+            return null;
+        }
         $idData = array();
-        $idData[$this->options['username']] = $data[$this->options['username']];
+        $idData[$this->usernameField] = $data[$this->usernameField];
         $user = $userModel->findUser($idData);
         if (isset($user)) {
             $password = $userModel->getPassword($user);

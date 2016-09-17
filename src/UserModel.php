@@ -19,6 +19,8 @@ interface UserModel
      * on failure.
      */
     public function findUser(array $data);
+    
+    public function getPassword($userData);
 
     /**
      * Create a session.

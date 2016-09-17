@@ -12,21 +12,23 @@ use Jivoo\Security\UserModel;
 /**
  * Authentication using Basic HTTP authentication.
  */
-class BasicAuthentication extends Authentication
+class BasicAuthentication implements Authentication
 {
 
     /**
-     * @var array
+     * @var string|null
      */
-    private $options = array(
-        'realm' => null,
-        'usernameField' => 'username'
-    );
+    private $realm;
+    
+    /**
+     * @var string
+     */
+    private $usernameField;
     
     public function __construct($realm = null, $usernameField = 'username')
     {
-        $this->options['realm'] = $realm;
-        $this->options['usernameField'] = $usernameField;
+        $this->realm = $realm;
+        $this->usernameField = $usernameField;
     }
 
     /**
@@ -34,12 +36,12 @@ class BasicAuthentication extends Authentication
      */
     public function authenticate($data, UserModel $userModel, PasswordHasher $hasher)
     {
-        if (!isset($this->options['realm'])) {
-            $this->options['realm'] = $_SERVER['SERVER_NAME'];
+        if (!isset($this->realm)) {
+            $this->realm = $_SERVER['SERVER_NAME'];
         }
         if (isset($_SERVER['PHP_AUTH_USER']) and isset($_SERVER['PHP_AUTH_PW'])) {
             $idData = array();
-            $idData[$this->options['usernameField']] = $_SERVER['PHP_AUTH_USER'];
+            $idData[$this->usernameField] = $_SERVER['PHP_AUTH_USER'];
             $user = $userModel->findUser($idData);
             if (isset($user)) {
                 $password = $userModel->getPassword($user);

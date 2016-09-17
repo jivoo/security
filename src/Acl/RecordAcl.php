@@ -5,14 +5,12 @@
 // See the LICENSE file or http://opensource.org/licenses/MIT for more information.
 namespace Jivoo\Security\Acl;
 
-use Jivoo\Security\LoadableAcl;
-
 /**
  * An access control list implementation that calls the method 'hasPermission'
  * on the requesting user to check permissions. To use this ACL module,
  * implement a 'recordHasPermission' method in the user model.
  */
-class RecordAcl extends LoadableAcl
+class RecordAcl implements \Jivoo\Security\Acl
 {
 
     /**

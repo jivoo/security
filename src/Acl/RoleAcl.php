@@ -5,19 +5,16 @@
 // See the LICENSE file or http://opensource.org/licenses/MIT for more information.
 namespace Jivoo\Security\Acl;
 
-use Jivoo\Security\LoadableAcl;
-use Jivoo\Models\BasicRecord;
 use Jivoo\Security\PermissionList;
 use Jivoo\Security\PermissionListBuilder;
-use Jivoo\Security\Jivoo\Security;
 use Jivoo\Security\InvalidRoleException;
 
 /**
  * An access control list implementation that assumes the user data has a
  * 'role' field (can be changed with the 'field' option) that can be accessed
- * using array access (e.g. as implemented by {@see BasicRecord})
+ * using array access.
  */
-class RoleAcl extends LoadableAcl
+class RoleAcl implements \Jivoo\Security\Acl
 {
 
     /**
@@ -44,7 +41,6 @@ class RoleAcl extends LoadableAcl
             $role = $user[$field];
         }
         if (!isset($this->roles[$role])) {
-            $this->logger->warning(tr('Undefined role: %1', $role));
             return false;
         }
         return $this->roles[$role]->hasPermission($permission);
@@ -95,7 +91,7 @@ class RoleAcl extends LoadableAcl
         $permissions = new PermissionListBuilder($this->app);
         if (isset($parent)) {
             if (!isset($this->roles[$parent])) {
-                throw new InvalidRoleException(tr('Undefined role: %1', $parent));
+                throw new InvalidRoleException('Undefined role: ' . $parent);
             }
             $permissions->inheritFrom($this->roles[$parent]);
         }

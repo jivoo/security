@@ -5,15 +5,12 @@
 // See the LICENSE file or http://opensource.org/licenses/MIT for more information.
 namespace Jivoo\Security\Acl;
 
-use Jivoo\Security\LoadableAcl;
-use Jivoo\Security\PermissionList;
-
 /**
  * Default modifiable access control list. Permissions are independent of user.
  * Can be used to dynamically set permissions in the controller. Default is
  * to deny everything.
  */
-class DefaultAcl extends LoadableAcl
+class DefaultAcl implements \Jivoo\Security\Acl
 {
 
     /**

@@ -182,7 +182,8 @@ class Auth
                 return;
         }
         if ($value instanceof Authentication) {
-            $this->authenticationWrappers[$property] = new AuthenticationWrapper($this, $value);
+            $this->addAuthentication($value, $property);
+            return;
         }
         throw new InvalidPropertyException('Undefined property: ' . $property);
     }

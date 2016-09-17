@@ -69,5 +69,4 @@ class SessionAuthentication implements \Jivoo\Security\Authentication
         $this->sessionId = $sessionId;
         return true;
     }
-
 }

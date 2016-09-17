@@ -73,5 +73,4 @@ class CookieAuthentication implements \Jivoo\Security\Authentication
         $this->sessionId = $sessionId;
         return true;
     }
-
 }

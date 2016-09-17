@@ -21,16 +21,19 @@ class AuthenticationWrapper
      */
     private $authentication;
     
-    public function __construct(Auth $auth, Authentication $authentication) {
+    public function __construct(Auth $auth, Authentication $authentication)
+    {
         $this->auth = $auth;
         $this->authentication = $authentication;
     }
     
-    public function authenticate($token) {
+    public function authenticate($token)
+    {
         $this->auth->authenticate($token, $this->authentication);
     }
     
-    public function create() {
+    public function create()
+    {
         $this->authentication->create($this->auth->user, $this->auth->userModel);
     }
 }

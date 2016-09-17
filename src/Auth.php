@@ -5,11 +5,11 @@
 // See the LICENSE file or http://opensource.org/licenses/MIT for more information.
 namespace Jivoo\Security;
 
-use Jivoo\Helpers\Helper;
+use Jivoo\Assume;
+use Jivoo\InvalidPropertyException;
 use Jivoo\Security\Acl\DefaultAcl;
-use Jivoo\Core\Utilities;
-use Jivoo\Routing\RenderEvent;
-use Jivoo\Core\Assume;
+use Jivoo\Security\Hashing\DefaultHasher;
+use Jivoo\Utilities;
 
 /**
  * Module for authentication and authorization.
@@ -56,14 +56,14 @@ class Auth
 {
 
     /**
+     * @var UserModel User model.
+     */
+    private $userModel;
+
+    /**
      * @var mixed Current user, if logged in.
      */
     private $user = null;
-
-    /**
-     * @var UserModel User model.
-     */
-    private $userModel = null;
 
     /**
      * @var string Prefix for permissions.
@@ -71,39 +71,29 @@ class Auth
     private $permissionPrefix = '';
 
     /**
-     * @param array|Linkable|string|null $route Route for login page.
-     */
-    private $loginRoute = null;
-
-    /**
-     * @param array|Linkable|string|null $route Route unauthorized page.
-     */
-    private $unauthorizedRoute = null;
-
-    /**
-     * @var array|Linkable|string|null $route Route for AJAX requests.
-     */
-    private $ajaxRoute = null;
-
-    /**
      * @var Authentication[] Associative array of authentication methods.
      */
-    private $authenticationMethods = array();
+    private $authenticationMethods = [];
+    
+    /**
+     * @var AuthenticationWrapper[]
+     */
+    private $authenticationWrappers = [];
 
     /**
      * @var Authorization[] Associative array of authorization methods.
      */
-    private $authorizationMethods = array();
+    private $authorizationMethods = [];
 
     /**
      * @var Acl[] Associative array of ACL handlers.
      */
-    private $aclMethods = array();
+    private $aclMethods = [];
 
     /**
      * @var (Authentication|Authorization|Acl)[]
      */
-    private $acModules = array();
+    private $acModules = [];
 
     /**
      * @var PasswordHasher Password hasher.
@@ -114,22 +104,11 @@ class Auth
      * @var DefaultAcl Default access control list.
      */
     private $defaultAcl = null;
-    
-    /**
-     * @var \Jivoo\Http\Router
-     */
-    private $router;
-    
-    /**
-     * @var \Jivoo\Store\Document
-     */
-    private $session;
 
-    public function __construct(\Jivoo\Http\Router $router, \Jivoo\Store\Document $session)
+    public function __construct(UserModel $userModel)
     {
-        $this->router = $router;
-        $this->session = $session;
-        $this->passwordHasher = new Hashing\DefaultHasher();
+        $this->userModel = $userModel;
+        $this->passwordHasher = new DefaultHasher();
         $this->defaultAcl = new DefaultAcl($this->app);
         $this->addAcl($this->defaultAcl);
     }
@@ -151,7 +130,10 @@ class Auth
             case 'user':
                 return $this->getUser();
         }
-        throw new \Jivoo\InvalidPropertyException('Undefined property: ' . $property);
+        if (isset($this->authenticationWrappers[$property])) {
+            return $this->authenticationWrappers[$property];
+        }
+        throw new InvalidPropertyException('Undefined property: ' . $property);
     }
 
     /**
@@ -168,7 +150,7 @@ class Auth
                 $this->$property = $value;
                 return;
             case 'passwordHasher':
-                Jivoo\Assume::that($value instanceof PasswordHasher);
+                Assume::that($value instanceof PasswordHasher);
                 $this->passwordHasher = $value;
                 return;
             case 'authentication':
@@ -199,7 +181,10 @@ class Auth
                 }
                 return;
         }
-        throw new \Jivoo\InvalidPropertyException('Undefined property: ' . $property);
+        if ($value instanceof Authentication) {
+            $this->authenticationWrappers[$property] = new AuthenticationWrapper($this, $value);
+        }
+        throw new InvalidPropertyException('Undefined property: ' . $property);
     }
 
     /**
@@ -214,6 +199,7 @@ class Auth
         if (!isset($name)) {
             $name = Utilities::getClassName($authentication);
         }
+        $this->authenticationWrappers[$name] = new AuthenticationWrapper($this, $authentication);
         $this->acModules[$name] = $authentication;
     }
 
@@ -276,18 +262,6 @@ class Auth
     }
 
     /**
-     * Check permission. Craetes authoirzation error if the current user does
-     * not have the specified permission.
-     * @param string $permission Permission string.
-     */
-    public function check($permission)
-    {
-        if (!$this->hasPermission($permission)) {
-            $this->authorizationError();
-        }
-    }
-
-    /**
      * Whether or not current user (or guest) has a permission.
      * @param string $permission Permission string.
      * @param string $prefix Prefix for permission, see also {@see $permissionPrefix}.
@@ -319,59 +293,6 @@ class Auth
             }
         }
         return false;
-    }
-
-    /**
-     * Redirect to a login page.
-     * @throws ResponseOverrideException If no other route defined.
-     */
-    public function authenticationError()
-    {
-        if ($this->router->request->isAjax()) {
-            if (isset($this->ajaxRoute)) {
-                $this->router->redirect($this->ajaxRoute);
-            }
-        } elseif (isset($this->loginRoute)) {
-            $this->router->redirect($this->loginRoute);
-        }
-        throw new ResponseOverrideException(
-            new TextResponse(Http::FORBIDDEN, 'text/plain', tr('Unauthenticated'))
-        );
-    }
-
-    /**
-     * Redirect to an "unauthorized" page if logged in, otherwise redirect
-     * to login page.
-     * @throws ResponseOverrideException If no route defined.
-     */
-    public function authorizationError()
-    {
-        if (!$this->isLoggedIn()) {
-            $this->authenticationError();
-        }
-        if ($this->request->isAjax()) {
-            if (isset($this->ajaxRoute)) {
-                $this->m->Routing->redirect($this->ajaxRoute);
-            }
-        } elseif (isset($this->unauthorizedRoute)) {
-            $this->m->Routing->redirect($this->unauthorizedRoute);
-        } elseif (isset($this->loginRoute)) {
-            $this->m->Routing->redirect($this->loginRoute);
-        }
-        throw new ResponseOverrideException(
-            new TextResponse(Http::FORBIDDEN, 'text/plain', tr('Unauthorized'))
-        );
-    }
-
-    /**
-     * Check user authorization for the current route.
-     * @param RenderEvent $event The action event.
-     */
-    public function checkAuthorization(RenderEvent $event)
-    {
-        if (!$this->hasAuthorization($event->route)) {
-            $this->authorizationError();
-        }
     }
 
     /**
@@ -420,12 +341,19 @@ class Auth
      * @param mixed $token Authentication token.
      * @return boolean True if successfully logged in, false otherwise.
      */
-    public function authenticate($token)
+    public function authenticate($token, Authentication $method = null)
     {
-        foreach ($this->authenticationMethods as $method) {
+        if (isset($method)) {
             $user = $method->authenticate($token, $this->userModel, $this->passwordHasher);
             if ($user !== null) {
                 $this->user = $user;
+            }
+        } else {
+            foreach ($this->authenticationMethods as $method) {
+                $user = $method->authenticate($token, $this->userModel, $this->passwordHasher);
+                if ($user !== null) {
+                    $this->user = $user;
+                }
             }
         }
         return isset($this->user);

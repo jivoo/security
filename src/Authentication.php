@@ -27,4 +27,12 @@ interface Authentication
      * @param UserModel $userModel User model.
      */
     public function deauthenticate($userData, UserModel $userModel);
+    
+    /**
+     * Create user authentication.
+     * @param mixed $userData User data.
+     * @param UserModel $userModel User model.
+     * @return bool True if created, false otherwise.
+     */
+    public function create($userData, UserModel $userModel);
 }

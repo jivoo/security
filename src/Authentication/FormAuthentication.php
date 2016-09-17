@@ -19,7 +19,7 @@ class FormAuthentication extends Authentication
 {
 
     /**
-     * {@inheritdoc}
+     * @var string[]
      */
     protected $options = array(
         'username' => 'username'
@@ -47,5 +47,13 @@ class FormAuthentication extends Authentication
      */
     public function deauthenticate($userData, \Jivoo\Security\UserModel $userModel)
     {
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function create($userData, \Jivoo\Security\UserModel $userModel)
+    {
+        return false;
     }
 }

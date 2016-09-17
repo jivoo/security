@@ -57,4 +57,12 @@ class BasicAuthentication extends Authentication
     public function deauthenticate($userData, \Jivoo\Security\UserModel $userModel)
     {
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function create($userData, \Jivoo\Security\UserModel $userModel)
+    {
+        return false;
+    }
 }

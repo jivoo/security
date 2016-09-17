@@ -61,12 +61,13 @@ class SessionAuthentication implements \Jivoo\Security\Authentication
         }
     }
     
-    public function persist($user, \Jivoo\Security\UserModel $userModel)
+    public function create($user, \Jivoo\Security\UserModel $userModel)
     {
         $sessionId = $userModel->createSession($user, time() + $this->lifeTime);
         $this->session[$this->name] = $sessionId;
         $this->session[$this->renewName] = time() + $this->renewAfter;
         $this->sessionId = $sessionId;
+        return true;
     }
 
 }

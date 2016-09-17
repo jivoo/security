@@ -63,7 +63,7 @@ class CookieAuthentication implements \Jivoo\Security\Authentication
         }
     }
     
-    public function persist($user, \Jivoo\Security\UserModel $userModel)
+    public function create($user, \Jivoo\Security\UserModel $userModel)
     {
         $sessionId = $userModel->createSession($user, time() + $this->lifeTime);
         $this->cookies[$this->name]->setValue($sessionId)
@@ -71,6 +71,7 @@ class CookieAuthentication implements \Jivoo\Security\Authentication
         $this->cookies[$this->renewName]->setValue(time() + $this->renewAfter)
             ->expiresAfter($this->lifeTime);
         $this->sessionId = $sessionId;
+        return true;
     }
 
 }

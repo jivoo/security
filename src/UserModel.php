@@ -6,22 +6,24 @@
 namespace Jivoo\Security;
 
 /**
- * A model that can be used with {@see AuthHelper}.
+ * A model that can be used with {@see Auth}.
  */
 interface UserModel
 {
 
     /**
      * Find a user matching the provided identification data.
+     *
      * @param array $data Identification data, e.g. a username.
-     * @return mixed|null User data (e.g. an {@see Jivoo\Models\BasicRecord}) for
-     * an authenticated user or null on failure.
+     * @return mixed|null User data (e.g. an {@see Jivoo\Data\Record}) or null
+     * on failure.
      */
     public function findUser(array $data);
 
     /**
      * Create a session.
-     * @param mixed $userData User data, as returned by {@see authenticate()} or
+     *
+     * @param mixed $userData User data, as returned by {@see findUser()} or
      * {@see openSession()}.
      * @param int $validUntil Time at which session is no longer valid.
      * @return string A session id.
@@ -30,14 +32,16 @@ interface UserModel
 
     /**
      * Open an existing session, i.e. find the user associated with the session id.
+     *
      * @param string $sessionId A session id.
-     * @return mixed|null User data (e.g. an {@see Jivoo\Models\BasicRecord}) or
+     * @return mixed|null User data (e.g. an {@see Jivoo\Data\Record}) or
      * null if session id is invalid.
      */
     public function openSession($sessionId);
 
     /**
      * Renew a session.
+     *
      * @param string $sessionId A session id.
      * @param int $validUntil Time at which session is no longer valid.
      */
@@ -45,6 +49,7 @@ interface UserModel
 
     /**
      * Delete a session.
+     *
      * @param string $sessionId A session id.
      */
     public function deleteSession($sessionId);

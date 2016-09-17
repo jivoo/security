@@ -6,7 +6,7 @@
 namespace Jivoo\Security\Authentication;
 
 /**
- * Description of SessionAuthentication
+ * Cookie authentication.
  */
 class CookieAuthentication implements \Jivoo\Security\Authentication
 {
@@ -16,21 +16,52 @@ class CookieAuthentication implements \Jivoo\Security\Authentication
      */
     private $cookies;
     
-    private $name = 'auth_session';
+    /**
+     * Name of authentication cookie.
+     *
+     * @var string
+     */
+    public $name = 'auth_session';
     
-    private $renewName = 'auth_renew_at';
+    /**
+     * Name of renew cookie.
+     *
+     * @var string
+     */
+    public $renewName = 'auth_renew_at';
     
-    private $renewAfter = 864000; // 10 days
+    /**
+     * Number of seconds after which the cookie is renewed.
+     *
+     * @var int
+     */
+    public $renewAfter = 864000; // 10 days
+
+    /**
+     * Life time of cookie in seconds.
+     *
+     * @var int
+     */
+    public $lifeTime = 2592000; // 30 days
     
-    private $lifeTime = 2592000; // 30 days
-    
+    /**
+     * @var string
+     */
     private $sessionId = null;
     
+    /**
+     * Construct cookie authentication object.
+     *
+     * @param \Jivoo\Http\Cookie\CookiePool $cookies Cookie pool.
+     */
     public function __construct(\Jivoo\Http\Cookie\CookiePool $cookies)
     {
         $this->cookies = $cookies;
     }
     
+    /**
+     * {@inheritdoc}
+     */
     public function authenticate($data, \Jivoo\Security\UserModel $userModel, \Jivoo\Security\PasswordHasher $hasher)
     {
         if (isset($this->cookies[$this->name])) {
@@ -54,6 +85,9 @@ class CookieAuthentication implements \Jivoo\Security\Authentication
         return null;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function deauthenticate($userData, \Jivoo\Security\UserModel $userModel)
     {
         $userModel->deleteSession($this->sessionId);
@@ -64,6 +98,9 @@ class CookieAuthentication implements \Jivoo\Security\Authentication
         }
     }
     
+    /**
+     * {@inheritdoc}
+     */
     public function create($user, \Jivoo\Security\UserModel $userModel)
     {
         $sessionId = $userModel->createSession($user, time() + $this->lifeTime);

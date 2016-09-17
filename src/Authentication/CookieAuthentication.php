@@ -20,9 +20,9 @@ class CookieAuthentication implements \Jivoo\Security\Authentication
     
     private $renewName = 'auth_renew_at';
     
-    private $renewAfter = 1800;
+    private $renewAfter = 864000; // 10 days
     
-    private $lifeTime = 3600;
+    private $lifeTime = 2592000; // 30 days
     
     private $sessionId = null;
     

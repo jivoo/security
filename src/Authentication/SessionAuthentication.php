@@ -47,6 +47,7 @@ class SessionAuthentication implements \Jivoo\Security\Authentication
                 return $user;
             }
             unset($this->session[$this->name]);
+            unset($this->session[$this->renewName]);
         }
         return null;
     }

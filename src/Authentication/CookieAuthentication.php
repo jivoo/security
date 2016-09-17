@@ -34,14 +34,14 @@ class CookieAuthentication implements \Jivoo\Security\Authentication
     public function authenticate($data, \Jivoo\Security\UserModel $userModel, \Jivoo\Security\PasswordHasher $hasher)
     {
         if (isset($this->cookies[$this->name])) {
-            $sessionId = $this->cookies[$this->name];
+            $sessionId = $this->cookies[$this->name]->get();
             $user = $userModel->openSession($sessionId);
             if ($user) {
                 $this->sessionId = $sessionId;
                 if (isset($this->cookies[$this->renewName])) {
-                    if ($this->cookies[$this->renewName] <= time()) {
+                    if ($this->cookies[$this->renewName]->get() <= time()) {
                         $this->cookies[$this->name]->expiresAfter($this->lifeTime);
-                        $this->cookies[$this->renewName]->setValue(time() + $this->renewAfter)
+                        $this->cookies[$this->renewName]->set(time() + $this->renewAfter)
                             ->expiresAfter($this->lifeTime);
                         $userModel->renewSession($sessionId, time() + $this->lifeTime);
                     }
@@ -49,6 +49,7 @@ class CookieAuthentication implements \Jivoo\Security\Authentication
                 return $user;
             }
             unset($this->cookies[$this->name]);
+            unset($this->cookies[$this->renewName]);
         }
         return null;
     }
@@ -66,9 +67,9 @@ class CookieAuthentication implements \Jivoo\Security\Authentication
     public function create($user, \Jivoo\Security\UserModel $userModel)
     {
         $sessionId = $userModel->createSession($user, time() + $this->lifeTime);
-        $this->cookies[$this->name]->setValue($sessionId)
+        $this->cookies[$this->name]->set($sessionId)
             ->expiresAfter($this->lifeTime);
-        $this->cookies[$this->renewName]->setValue(time() + $this->renewAfter)
+        $this->cookies[$this->renewName]->set(time() + $this->renewAfter)
             ->expiresAfter($this->lifeTime);
         $this->sessionId = $sessionId;
         return true;

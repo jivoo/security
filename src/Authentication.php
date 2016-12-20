@@ -15,11 +15,10 @@ interface Authentication
      * Attempt to authenticate a user.
      * @param array $data Associative array of authentication data.
      * @param UserModel $userModel User model to use for authentication.
-     * @param PasswordHasher $hasher Password hasher used for passwords.
      * @return mixed|null User data (e.g. an {@see Jivoo\Models\BasicRecord})
      * or null on failure.
      */
-    public function authenticate($data, UserModel $userModel, PasswordHasher $hasher);
+    public function authenticate($data, UserModel $userModel);
 
     /**
      * Deauthenticate a user.

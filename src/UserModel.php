@@ -15,12 +15,20 @@ interface UserModel
      * Find a user matching the provided identification data.
      *
      * @param array $data Identification data, e.g. a username.
-     * @return mixed|null User data (e.g. an {@see Jivoo\Data\Record}) or null
+     * @return mixed|null User data (e.g. a {@see Jivoo\Data\Record}) or null
      * on failure.
      */
     public function findUser(array $data);
     
-    public function getPassword($userData);
+    /**
+     * Verify a user's password.
+     *
+     * @param array $userData User data, as returned by {@see findUser()} or
+     * {@see openSession()}.
+     * @param string $password Password.
+     * @return bool True if password verification succeeded, false otherwise.
+     */
+    public function verifyPassword($userData, $password);
 
     /**
      * Create a session.
@@ -36,7 +44,7 @@ interface UserModel
      * Open an existing session, i.e. find the user associated with the session id.
      *
      * @param string $sessionId A session id.
-     * @return mixed|null User data (e.g. an {@see Jivoo\Data\Record}) or
+     * @return mixed|null User data (e.g. a {@see Jivoo\Data\Record}) or
      * null if session id is invalid.
      */
     public function openSession($sessionId);

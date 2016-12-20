@@ -24,5 +24,12 @@ interface PasswordHasher
      * @param string $hash Hash string.
      * @return bool True if they match, false otherwise.
      */
-    public function compare($password, $hash);
+    public function verify($password, $hash);
+    
+    /**
+     * Whether the password needs to be rehashed.
+     * @param string $hash Hashed password.
+     * @return bool True if a rehash is needed.
+     */
+    public function needsRehash($hash);
 }

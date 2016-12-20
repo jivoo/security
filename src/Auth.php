@@ -32,8 +32,6 @@ use Jivoo\Utilities;
  * @property int $cookieLifeTime Life time of cookies in seconds.
  * @property int $cookieRenewAfter Number of seconds after which the cookie
  * is renewed.
- * @property PasswordHasher $passwordHasher Password hasher used to hash
- * passwords.
  * @property string $permissionPrefix Prefix for permissions when checking
  * access control lists.
  * @property-read mixed $user User data of current user if logged in, otherwise
@@ -96,11 +94,6 @@ class Auth
     private $acModules = [];
 
     /**
-     * @var PasswordHasher Password hasher.
-     */
-    private $passwordHasher = null;
-
-    /**
      * @var DefaultAcl Default access control list.
      */
     private $defaultAcl = null;
@@ -108,7 +101,6 @@ class Auth
     public function __construct(UserModel $userModel)
     {
         $this->userModel = $userModel;
-        $this->passwordHasher = new DefaultHasher();
         $this->defaultAcl = new DefaultAcl($this->app);
         $this->addAcl($this->defaultAcl);
     }
@@ -124,7 +116,6 @@ class Auth
             case 'loginRoute':
             case 'unauthorizedRoute':
             case 'ajaxRoute':
-            case 'passwordHasher':
             case 'permissionPrefix':
                 return $this->$property;
             case 'user':
@@ -148,10 +139,6 @@ class Auth
             case 'ajaxRoute':
             case 'permissionPrefix':
                 $this->$property = $value;
-                return;
-            case 'passwordHasher':
-                Assume::that($value instanceof PasswordHasher);
-                $this->passwordHasher = $value;
                 return;
             case 'authentication':
                 if (is_array($value)) {
@@ -345,13 +332,13 @@ class Auth
     public function authenticate($token, Authentication $method = null)
     {
         if (isset($method)) {
-            $user = $method->authenticate($token, $this->userModel, $this->passwordHasher);
+            $user = $method->authenticate($token, $this->userModel);
             if ($user !== null) {
                 $this->user = $user;
             }
         } else {
             foreach ($this->authenticationMethods as $method) {
-                $user = $method->authenticate($token, $this->userModel, $this->passwordHasher);
+                $user = $method->authenticate($token, $this->userModel);
                 if ($user !== null) {
                     $this->user = $user;
                 }

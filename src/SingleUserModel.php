@@ -55,13 +55,11 @@ class SingleUserModel implements UserModel
     }
 
     /**
-     * Get password for user.
-     * @param array $userData User data.
-     * @return string Passowrd hash.
+     * {@inheritdoc}
      */
-    public function getPassword($userData)
+    public function verifyPassword($userData, $password)
     {
-        return $this->password;
+        return Hash::verify($password, $this->password);
     }
 
     /**
@@ -90,7 +88,6 @@ class SingleUserModel implements UserModel
      */
     public function renewSession($sessionId, $validUntil)
     {
-        
     }
 
     /**

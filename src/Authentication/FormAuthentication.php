@@ -6,7 +6,6 @@
 namespace Jivoo\Security\Authentication;
 
 use Jivoo\Security\Authentication;
-use Jivoo\Security\PasswordHasher;
 use Jivoo\Security\UserModel;
 
 /**
@@ -31,7 +30,7 @@ class FormAuthentication implements Authentication
     /**
      * {@inheritdoc}
      */
-    public function authenticate($data, UserModel $userModel, PasswordHasher $hasher)
+    public function authenticate($data, UserModel $userModel)
     {
         if (!is_array($data)) {
             return null;
@@ -40,8 +39,7 @@ class FormAuthentication implements Authentication
         $idData[$this->usernameField] = $data[$this->usernameField];
         $user = $userModel->findUser($idData);
         if (isset($user)) {
-            $password = $userModel->getPassword($user);
-            if ($hasher->compare($data['password'], $password)) {
+            if ($userModel->verifyPassword($data['password'])) {
                 return $user;
             }
         }

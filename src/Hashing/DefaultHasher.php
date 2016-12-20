@@ -15,20 +15,6 @@ class DefaultHasher implements PasswordHasher
 {
 
     /**
-     * Construct hasher.
-     * @throws UnsupportedHashTypeException If tha hash type is not supported by
-     * the current PHP installation.
-     */
-    public function __construct()
-    {
-        if (!function_exists('password_hash')) {
-            throw new UnsupportedHashTypeException(
-                'Unsupported password hasher: ' . get_class($this)
-            );
-        }
-    }
-
-    /**
      * {@inheritdoc}
      */
     public function hash($password)
@@ -39,8 +25,16 @@ class DefaultHasher implements PasswordHasher
     /**
      * {@inheritdoc}
      */
-    public function compare($password, $hash)
+    public function verify($password, $hash)
     {
         return password_verify($password, $hash);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function needsRehash($hash)
+    {
+        return password_needs_rehash($hash, PASSWORD_DEFAULT);
     }
 }

@@ -62,7 +62,7 @@ class CookieAuthentication implements \Jivoo\Security\Authentication
     /**
      * {@inheritdoc}
      */
-    public function authenticate($data, \Jivoo\Security\UserModel $userModel, \Jivoo\Security\PasswordHasher $hasher)
+    public function authenticate($data, \Jivoo\Security\UserModel $userModel)
     {
         if (isset($this->cookies[$this->name])) {
             $sessionId = $this->cookies[$this->name]->get();

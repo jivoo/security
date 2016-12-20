@@ -6,7 +6,6 @@
 namespace Jivoo\Security\Authentication;
 
 use Jivoo\Security\Authentication;
-use Jivoo\Security\PasswordHasher;
 use Jivoo\Security\UserModel;
 
 /**
@@ -34,7 +33,7 @@ class BasicAuthentication implements Authentication
     /**
      * {@inheritdoc}
      */
-    public function authenticate($data, UserModel $userModel, PasswordHasher $hasher)
+    public function authenticate($data, UserModel $userModel)
     {
         if (!isset($this->realm)) {
             $this->realm = $_SERVER['SERVER_NAME'];
@@ -44,8 +43,7 @@ class BasicAuthentication implements Authentication
             $idData[$this->usernameField] = $_SERVER['PHP_AUTH_USER'];
             $user = $userModel->findUser($idData);
             if (isset($user)) {
-                $password = $userModel->getPassword($user);
-                if ($hasher->compare($_SERVER['PHP_AUTH_PW'], $password)) {
+                if ($userModel->verifyPassword($_SERVER['PHP_AUTH_PW'])) {
                     return $user;
                 }
             }

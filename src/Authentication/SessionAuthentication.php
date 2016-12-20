@@ -62,7 +62,7 @@ class SessionAuthentication implements \Jivoo\Security\Authentication
     /**
      * {@inheritdoc}
      */
-    public function authenticate($data, \Jivoo\Security\UserModel $userModel, \Jivoo\Security\PasswordHasher $hasher)
+    public function authenticate($data, \Jivoo\Security\UserModel $userModel)
     {
         if (isset($this->session[$this->name])) {
             $sessionId = $this->session[$this->name];

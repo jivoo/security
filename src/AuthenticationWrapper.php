@@ -6,7 +6,7 @@
 namespace Jivoo\Security;
 
 /**
- * Description of АuthenticationWrapper
+ * A wrapper for {@see Authentication} objects.
  */
 class AuthenticationWrapper
 {

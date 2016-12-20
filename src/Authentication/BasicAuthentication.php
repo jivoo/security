@@ -43,7 +43,7 @@ class BasicAuthentication implements Authentication
             $idData[$this->usernameField] = $_SERVER['PHP_AUTH_USER'];
             $user = $userModel->findUser($idData);
             if (isset($user)) {
-                if ($userModel->verifyPassword($_SERVER['PHP_AUTH_PW'])) {
+                if ($userModel->verifyPassword($user, $_SERVER['PHP_AUTH_PW'])) {
                     return $user;
                 }
             }

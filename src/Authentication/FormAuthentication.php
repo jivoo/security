@@ -39,7 +39,7 @@ class FormAuthentication implements Authentication
         $idData[$this->usernameField] = $data[$this->usernameField];
         $user = $userModel->findUser($idData);
         if (isset($user)) {
-            if ($userModel->verifyPassword($data['password'])) {
+            if ($userModel->verifyPassword($user, $data['password'])) {
                 return $user;
             }
         }

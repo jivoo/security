@@ -101,7 +101,7 @@ class Auth
     public function __construct(UserModel $userModel)
     {
         $this->userModel = $userModel;
-        $this->defaultAcl = new DefaultAcl($this->app);
+        $this->defaultAcl = new DefaultAcl();
         $this->addAcl($this->defaultAcl);
     }
     
